@@ -6,7 +6,7 @@ Requires NBTLib `python -m pip install nbtlib`.
 
 ## What this tool does
 This tool converts the block data, block value data, player data and tile entity data into alpha save format. It also recalculates the height map.
-The world must be in the default size for this tool to work (256x256x64).
+The world must have the shape and size set to Square and Normal to be able to be converted (256x256x64).
 
 ## What this tool doesn't do
 It doesn't convert mobs, light data or any indev data (such as skybox colour) that isn't used in alpha save format.
