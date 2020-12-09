@@ -13,5 +13,5 @@ It doesn't convert mobs, light data or any indev data (such as skybox colour, ab
 It cannot convert worlds that are not the default size.
 
 #### Bugs
-Block data and height map seem to bee buggy, although they do work.
-I have tested on indev versions 20100128 and 20100218 converting to infdev 20100327.
+Block data and height map seem to be buggy, although they do work. Weird block DVs may affect gameplay due to preserved block data in infdev 20100327.
+I have tested on indev versions 20100128 and 20100218 converting to infdev 20100327. You should be able play on any version using the alpha save format, although untested.
