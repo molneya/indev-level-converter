@@ -4,7 +4,7 @@
 Download the .py file and place it in a folder with a .mclevel file. Run the python file and then wait for it to convert. 
 All worlds will be converted to the name "World1". 
 Move this folder into your minecraft saves and then load any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01).
-Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1). [Untested]
+Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1) (This is untested). 
 
 Requires NBTLib `python -m pip install nbtlib`.
 
@@ -27,6 +27,9 @@ Theme is up to you, but Hell also looks quite ugly without the red skybox.
 Some versions also have chests filled with almost every item in the game (including some unobtainables) so if you want extra blocks choose one of the versions where they are available.
 
 ## Known Issues
+The world will not convert if the shape and size is not set to Square and Normal.
+Other world shapes may be supported in the future.
+
 When loading the world for the first time, the world will take a while to be playable because it must recalculate the light data, as it is not converted with this tool.
 
 Mobs will not load in versions before Infdev 20100415 because they did not save again before then.
