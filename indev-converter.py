@@ -22,10 +22,10 @@ except:
 About = nbt_file.root['About']
 Environment = nbt_file.root['Environment']
 Map = nbt_file.root['Map']
-Entities = nbt_file.root['Entities'] #Does this need to be implemented? early infdev doesnt save entities anyway.
+Entities = nbt_file.root['Entities'] #Let's implement this.
 TileEntities = nbt_file.root['TileEntities']
 
-print("getting inventory data...")
+print("getting inventory and world data...")
 #Get data
 for i in Entities:
     if "Inventory" in i:
@@ -58,20 +58,54 @@ LastPlayed = About["CreatedOn"]
 try: Time = Long(Environment["TimeOfDay"])
 except: Time = Long(0)
 
+print("getting entity data...")
+#Get entity data
+EntityList = []
+for i in Entities:
+    
+    if "Inventory" in i:
+        continue
+
+    motion = []
+    for j in i['Motion']:
+        motion.append(Double(j))
+    i['Motion'] = List[Double](motion)
+
+    pos = []
+    t = 0
+    for j in i['Pos']:
+        pos.append(Double(j + 32 * (t==1)))
+        t += 1
+    i['Pos']= List[Double](pos)
+
+    try:
+        i['TileX'] = Int(i['TileX'])
+        i['TileY'] = Int(i['TileY'] + 32)
+        i['TileZ'] = Int(i['TileZ'])
+    except: pass
+
+    try:
+        i['xTile'] = Short(i['xTile'] % 16)
+        i['yTile'] = Short(i['yTile'] + 32)
+        i['zTile'] = Short(i['zTile'] % 16)
+    except: pass
+
+    EntityList.append(i)
+    
+print("getting tile entity data...")
+#Get tile entities
 Blocks = Map['Blocks']
 Data = Map['Data']
 Zeroes = [Byte(0)] * 32768
 
-print("getting tile entity data...")
-#Get tile entities
-Tiles = []
+TileList = []
 for i in TileEntities:
     pos = int(i['Pos'])
     i['x'] = Int(pos % 1024)
     i['y'] = Int((pos >> 10) % 1024 + 32)
     i['z'] = Int((pos >> 20) % 1024)
     i.pop('Pos')
-    Tiles.append(i)
+    TileList.append(i)
 
 print("getting block ID data...")
 #Get blocks into format
@@ -167,7 +201,7 @@ new_file = File({
             'SpawnX': SpawnX,
             'SpawnY': SpawnY,
             'SpawnZ': SpawnZ,
-            'Time': Time,
+            'Time': Time
             })
         })
     })
@@ -182,15 +216,22 @@ for i in range(0, 16):
 
         #calc TileEntity chunk positions
         tiles_new = []
-        for k in Tiles:
+        for k in TileList:
             if k['x'] // 16 == i and k['z'] // 16 == j:
                 tiles_new.append(k)
+
+        #calc Entity chunk positions
+        entity_new = []
+        for k in EntityList:
+            if k['Pos'][0] // 16 == i and k['Pos'][2] // 16 == j:
+                entity_new.append(k)
         
         n = 16*i + j
         
         new_file = File({
             '': Compound({
                 'Level': Compound({
+                    'Entities': List[Compound](entity_new),
                     'TileEntities': List[Compound](tiles_new),
                     'LastUpdate': Long(200),
                     'xPos': Int(i),
@@ -199,7 +240,7 @@ for i in range(0, 16):
                     'Data': ByteArray(Data_nibbles[n*16384:n*16384+16384]),
                     'BlockLight': ByteArray(Zeroes[0:16384]),
                     'SkyLight': ByteArray(Zeroes[0:16384]),
-                    'HeightMap': ByteArray(HeightMap[n*256:n*256+256])
+                    'HeightMap': ByteArray(HeightMap[n*256:n*256+256]),
                     })
                 })
             })
