@@ -6,7 +6,7 @@ All worlds will be converted to the name "World1".
 Move this folder into your minecraft saves and then load any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01).
 Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1) (This is untested). 
 
-Requires NBTLib `python -m pip install nbtlib`.
+Requires NBTLib: `python -m pip install nbtlib`
 
 ## What this tool does
 This tool converts the block data, block value data, player data, tile entity data and entity data (mobs) into alpha save format. 
@@ -28,11 +28,16 @@ Some versions also have chests filled with almost every item in the game (includ
 The world will not convert if the shape and size is not set to Square and Normal.
 Other world shapes may be supported in the future.
 
+Worlds are repopulated once updating. That means you will see more trees, ores and caves than you might expect.
+
 If your world crashes when you load, you may have chunks with invalid IDs in that version (probably old coloured cloths).
 
 If your world crashes upon opening a chest, you probably have invalid IDs in that chest (again, probably coloured cloths).
 
 When loading the world for the first time, the world will take a while to be playable because it must recalculate the light data, as it is not converted with this tool.
+
+Some light will also be broken for unknown reasons in late Alpha versions.
+Probably has something to do with the world repopulating the terrain.
 
 Mobs will not load in versions before Infdev 20100415 because they did not save again before then.
 The mobs will still be there after this version, so if you placed a block where a pig used to be it will suffocate in that block.
@@ -42,5 +47,3 @@ Shot arrows will not load until late Infdev/early Alpha (version unknown).
 Before Indev 20100212-1, torches' attachment depended on what blocks surround them.
 That means if you convert a world before that version, torches will appear to be placed in mid-air.
 Breaking and replacing the torches in a version above this will fix this issue.
-
-Farmland dehydrates upon conversion. This is probably due to the difference in how farmland worked.
