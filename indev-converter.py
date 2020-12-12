@@ -313,4 +313,4 @@ for i in range(0, 16):
         except: pass
         new_file.save(f'World1/{base36list[i]}/{base36list[j]}/c.{base36signed[i]}.{base36signed[j]}.dat', gzipped=True)
 
-print(f'converted world {Worlds[0]} to alpha save format')
+print(f'Converted world {Worlds[0]} to alpha save format')

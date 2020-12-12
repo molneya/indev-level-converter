@@ -1,18 +1,24 @@
 # indev level converter
 
 ## How to use
-Download the .py file and place it in a folder with a .mclevel file. Run the python file and then wait for it to convert. 
-All worlds will be converted to the name "World1". 
-Move this folder into your minecraft saves and then load any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01).
+Download the .py file and place it in a folder with a .mclevel (Indev) or .mine (classic) file. Run the python file and then wait for it to convert. 
+All worlds will be converted to the name "World1".
+
+For Indev converts, move this folder into your minecraft saves and then load any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01).
 Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1) (This is untested). 
+
+For Classic converts, all you need to do is load the file through the file explorer in Minecraft.
 
 Requires NBTLib: `python -m pip install nbtlib`
 
 ## What this tool does
-This tool converts the block data, block value data, player data, tile entity data and entity data (mobs) into alpha save format. 
+For Indev, this tool converts the block data, block value data, player data, tile entity data and entity data (mobs) into alpha save format. 
 It also recalculates the height map.
 Older Indev saves may also have some data missing (such as health), so instead a dummy value is used to allow conversion.
 The world must have the shape and size set to Square and Normal to be able to be converted (256x256x64).
+
+For Classic, it takes the raw block data and converts it into Indev level format.
+It also adds Environment data (such as skybox color) to the default on a normal island world.
 
 ## What this tool doesn't do
 It doesn't convert light data or any indev data (such as skybox colour) that isn't used in alpha save format.
