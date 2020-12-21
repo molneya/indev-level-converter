@@ -55,7 +55,7 @@ for i in Entities:
         Motion1 = Double(i['Motion'][1])
         Motion2 = Double(i['Motion'][2])
         Pos0 = Double(i['Pos'][0] - 128)
-        Pos1 = Double(i['Pos'][1]+32)
+        Pos1 = Double(i['Pos'][1] + 33)
         Pos2 = Double(i['Pos'][2] - 128)
         Rotation = i['Rotation']
         Air = i['Air']
@@ -187,10 +187,7 @@ for a in range(0, 16):
                 i += 32
                 
                 for y in range(0, 64):
-                    #if Blocks_new[i] in [Byte(6), Byte(8), Byte(9), Byte(10), Byte(11), Byte(50), Byte(51), Byte(55), Byte(59), Byte(60), Byte(61), Byte(62)]:
                     Data_new[i] = (Data[(y * 256 + x) * 256 + z] // 16) % 16
-                    #else:
-                        #Data_new[i] = Byte(0)
                     i += 1
 
                 for j in range(0, 32):
