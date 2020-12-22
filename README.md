@@ -44,9 +44,6 @@ If your world crashes upon opening a chest, you probably have invalid IDs in tha
 
 When loading the world for the first time, the world will take a while to be playable because it must recalculate the light data, as it is not converted with this tool.
 
-Some light will also be broken for unknown reasons in late Alpha versions.
-Probably has something to do with the world repopulating the terrain.
-
 Mobs will not load in versions before Infdev 20100415 because they did not save again before then.
 The mobs will still be there after this version, so if you placed a block where a pig used to be it will suffocate in that block.
 
