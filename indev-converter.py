@@ -6,13 +6,16 @@ import os
 
 try:
     Worlds = [f for f in os.listdir() if f.endswith('.mclevel')]
-    nbt_file = nbtlib.load(Worlds[0])
     print(f'Found world {Worlds[0]}')
     
 except:
     print('No worlds found! Check that the file extension is .mclevel and that you have placed something inside the folder.')
     input()
     exit()
+
+#load nbt
+
+nbt_file = nbtlib.load(Worlds[0])
 
 #Make world folder
 

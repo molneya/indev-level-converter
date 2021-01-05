@@ -8,13 +8,16 @@ import io
 
 try:
     Worlds = [f for f in os.listdir() if f.endswith('.mine')]
-    file = open(Worlds[0], 'rb').read()
     print(f'Found world {Worlds[0]}')
 
 except:
     print('No worlds found! Check that the file extension is .mine and that you have placed something inside the folder.')
     input()
     exit()
+
+#read world file
+
+file = open(Worlds[0], 'rb').read()
 
 #Decode level
 
