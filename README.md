@@ -4,6 +4,8 @@
 Download the .py file and place it in a folder with a .mclevel (Indev) or .mine (classic) file. Run the python file and then wait for it to convert. 
 All worlds will be converted to the name "World1".
 
+Some users may need to run the program as administrator to get it to work. You can do this on Windows by opening command prompt as administrator and running the program from there.
+
 For Indev converts, move this folder into your minecraft saves and then load any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01).
 Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1) (This is untested). 
 
