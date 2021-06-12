@@ -13,8 +13,6 @@ For Classic converts, all you need to do is load the file through the file explo
 
 Requires NBTLib: `python -m pip install nbtlib`
 
-If you have any problems, you can contact me on discord `molneya#3078`. I'm usually pretty quick to reply assuming I'm awake.
-
 ## What this tool does
 For Indev, this tool converts the block data, block value data, player data, tile entity data and entity data (mobs) into alpha save format. 
 It also recalculates the height map.
