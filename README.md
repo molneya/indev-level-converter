@@ -1,7 +1,7 @@
 # indev level converter
 
 ## How to use
-This program requires NBTLib, which can be installed using this command: `python -m pip install nbtlib==1.8.1`. This is an older version of nbtlib where some things changed, so make sure to use this version if you are seeing "'File' object has no attribute 'root'" errors.
+This program requires NBTLib, which can be installed using this command: `python -m pip install nbtlib==1.12.1`. This is an older version of nbtlib because some things in 2.0 broke this program, so make sure to use this version if you are seeing "'File' object has no attribute 'root'" errors.
 
 Download the files from **Releases** and place it in a folder with a `.mclevel` (Indev) file. Run the python file and then wait for it to convert. Use the settings in the `config.yml` file to adjust how the converter will process the world.
 
