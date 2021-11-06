@@ -1,316 +1,404 @@
-import nbtlib
+
 from nbtlib import *
+from yaml import safe_load
+import numpy as np
 import os
 
-#Find world
+# loads a file and returns a level dict
+def load_indev(dir):
 
-try:
-    Worlds = [f for f in os.listdir() if f.endswith('.mclevel')]
-    print(f'Found world {Worlds[0]}')
-    
-except:
-    print('No worlds found! Check that the file extension is .mclevel and that you have placed something inside the folder.')
-    input()
-    exit()
+    nbt_file = load(dir)
 
-#load nbt
-
-nbt_file = nbtlib.load(Worlds[0])
-
-#Make world folder
-
-try:
-    os.mkdir('World1')
-    
-except:
-    print('World1 folder already exists, please delete or rename to proceed (or some other error occurred with making the file).')
-    input()
-    exit()
-
-#Load root tags
-
-About = nbt_file.root['About']
-Environment = nbt_file.root['Environment']
-Map = nbt_file.root['Map']
-Entities = nbt_file.root['Entities']
-TileEntities = nbt_file.root['TileEntities']
-
-#Check world properties
-
-if not(Map['Height'] == 64 and Map['Length'] == 256 and Map['Width'] == 256):
-    
-    print('Unsupported world size. Please recreate your world with the default size to convert')
-    input()
-    exit()
-
-Type_floating = input('Floating world type? (y/N) ') in ['y', 'Y', 'yes', 'Yes', 'YES']
-
-#Get Player data
-
-print('getting player data...', end='\r')
-
-for i in Entities:
-    
-    if 'Inventory' in i:
+    level_indev = {
+        'About': nbt_file.root['About'],
+        'Environment': nbt_file.root['Environment'],
+        'Map': nbt_file.root['Map'],
+        'Entities': nbt_file.root['Entities'],
+        'TileEntities': nbt_file.root['TileEntities']
+        }
         
-        Inventory = i['Inventory']
-        Motion0 = Double(i['Motion'][0])
-        Motion1 = Double(i['Motion'][1])
-        Motion2 = Double(i['Motion'][2])
-        Pos0 = Double(i['Pos'][0] - 128)
-        Pos1 = Double(i['Pos'][1] + 33)
-        Pos2 = Double(i['Pos'][2] - 128)
-        Rotation = i['Rotation']
-        Air = i['Air']
-        try: AttackTime = i['AttackTime']
-        except: AttackTime = Short(0)
-        try: DeathTime = i['DeathTime']
-        except: DeathTime = Short(0)
-        FallDistance = i['FallDistance']
-        Fire = i['Fire']
-        try: Health = i['Health']
-        except: Health = Short(10)
-        try: HurtTime = i['HurtTime']
-        except: HurtTime = Short(0)
-        OnGround = Byte(1)
-        Score = i['Score']
-        
-SpawnX = Int(Map['Spawn'][0] - 128)
-SpawnY = Int(Map['Spawn'][1] + 32)
-SpawnZ = Int(Map['Spawn'][2] - 128)
-LastPlayed = About['CreatedOn']
-try: Time = Long(Environment['TimeOfDay'])
-except: Time = Long(0)
+    return(level_indev)
 
-#Get entity data
+  
+def convert_entities(level_indev, config):
 
-print('getting entity data...      ', end='\r')
+    L = level_indev['Map']['Length']
+    W = level_indev['Map']['Width']
 
-EntityList = []
+    World_entity_chunks = [[] for i in range((L // 16) * (W // 16))]
 
-for i in Entities:
-    
-    if 'Inventory' in i:
-        continue
-
-    motion_new = []
-    
-    for j in i['Motion']:
-        motion_new.append(Double(j))
-        
-    i['Motion'] = List[Double](motion_new)
-
-    pos_new = []
-    t = 0
-    
-    for j in i['Pos']:
-        
-        if t == 1: pos_new.append(Double(j + 32))
-        else: pos_new.append(Double(j - 128))
-        t += 1
-        
-    i['Pos']= List[Double](pos_new)
-
-    try:
-        i['TileX'] = Int(i['TileX'] - 128)
-        i['TileY'] = Int(i['TileY'] + 32)
-        i['TileZ'] = Int(i['TileZ'] - 128)
-        
-    except:
-        pass
-
-    try:
-        i['xTile'] = Short(i['xTile'] % 16)
-        i['yTile'] = Short(i['yTile'] + 32)
-        i['zTile'] = Short(i['zTile'] % 16)
-        
-    except:
-        pass
-
-    EntityList.append(i)
-    
-#Get tile entities
-
-print('getting tile entity data...  ', end='\r')
-
-TileList = []
-
-for i in TileEntities:
-    
-    pos = int(i['Pos'])
-    i['x'] = Int(pos % 1024 - 128)
-    i['y'] = Int((pos >> 10) % 1024 + 32)
-    i['z'] = Int((pos >> 20) % 1024 - 128)
-    i.pop('Pos')
-    TileList.append(i)
-
-#Get blocks into format
-
-Blocks = Map['Blocks']
-Zeroes = [Byte(0)] * 32768
-
-print('getting block ID data...       ', end='\r')
-
-Blocks_new = Zeroes * 256
-i = 0
-
-for a in range(0, 16):
-    for b in range(0, 16):
-        for z in range(a*16, a*16+16):
-            for x in range(b*16, b*16+16):
-    
-                for j in range(0, 32):
-                    Blocks_new[i+j] = Byte(not(Type_floating))
-                i += 32
+    for Entity in level_indev['Entities']:
+        if Entity['id'] != 'LocalPlayer':
+            
+            motion_new = []
+            for i in Entity['Motion']:
+                motion_new.append(Double(i))
                 
-                for y in range(0, 64):
-                    Blocks_new[i] = Blocks[(y * 256 + x) * 256 + z]
-                    i += 1
-
-                for j in range(0, 32):
-                    Blocks_new[i+j] = Byte(0)
-                i += 32
-
-#Get data into format
-
-Data = Map['Data']
+            Entity['Motion'] = List[Double](motion_new)
+            
+            pos_new = []
+            for i in Entity['Pos']:
+                pos_new.append(Double(i))
                 
-print('getting block DV data...       ', end='\r')
-
-Data_new = Zeroes * 256
-i = 0
-
-for a in range(0, 16):
-    for b in range(0, 16):
-        for z in range(a*16, a*16+16):
-            for x in range(b*16, b*16+16):
-
-                for j in range(0, 32):
-                    Data_new[i+j] = 0
-                i += 32
+            x = int(pos_new[0])
+            z = int(pos_new[2])
+            
+            pos_new[0] += config['x_chunk_offset'] * 16
+            pos_new[1] += config['y_offset'] + 1
+            pos_new[2] += config['z_chunk_offset'] * 16
+            
+            Entity['Pos'] = List[Double](pos_new)
+            
+            try:
+                Entity['TileX'] += config['x_chunk_offset'] * 16
+                Entity['TileY'] += config['y_offset']
+                Entity['TileZ'] += config['z_chunk_offset'] * 16
+            except KeyError:
+                pass
                 
-                for y in range(0, 64):
-                    Data_new[i] = (Data[(y * 256 + x) * 256 + z] // 16) % 16
-                    i += 1
+            try:
+                Entity['xTile'] += config['x_chunk_offset'] * 16
+                Entity['yTile'] += config['y_offset']
+                Entity['zTile'] += config['z_chunk_offset'] * 16
+            except KeyError:
+                pass
+            
+            chunk = x // 16 * L // 16 + z // 16
+            World_entity_chunks[chunk].append(Entity)
+    
+    return(World_entity_chunks)
+    
 
-                for j in range(0, 32):
-                    Data_new[i+j] = 0
-                i += 32
+def convert_tile_entities(level_indev, config):
 
-#get the bytes and convert them to nibbles
+    L = level_indev['Map']['Length']
+    W = level_indev['Map']['Width']
 
-print('converting block DV data...     ', end='\r')
-
-Data_nibbles = []
-
-for i in range(0, 8388608, 2):
-                                    
-    byte = Data_new[i+1] * 16 + Data_new[i]
-    byte -= 256 * (byte > 127)
-    byte = Byte(byte)                                                    
-    Data_nibbles.append(byte)
-
-#Calculate height map
-
-print('calculating height map...      ', end='\r')
-
-HeightMap = []
-
-for x in range(0, 256):
-    for i in range(0, 16):
-        for j in range(0, 16):
-
-            n = x*32768 + j*128*16 + i*128
-            blocks_height_test = Blocks_new[n:n+128]
-
-            for j in range(127, -1, -1):
-                
-                if j == 0:
-                    HeightMap.append(Byte(0))
-                    break
-
-                if blocks_height_test[j] != Byte(0):
-                    HeightMap.append(Byte(j))
-                    break
-
-#make new level.dat
-                
-print('creating level.dat...        ', end='\r')
-
-new_file = File({
-    '': Compound({
-        'Data': Compound({
-            'Player': Compound({
-                'Inventory': Inventory,
-                'Motion': List[Double]([Motion0, Motion1, Motion2]),
-                'Pos': List[Double]([Pos0, Pos1, Pos2]),
-                'Rotation': Rotation,
-                'Air': Air,
-                'AttackTime': AttackTime,
-                'DeathTime': DeathTime,
-                'FallDistance': FallDistance,
-                'Fire': Fire,
-                'Health': Health,
-                'HurtTime': HurtTime,
-                'OnGround': OnGround,
-                'Score': Score,
-                }),
-            'LastPlayed': LastPlayed,
-            'SpawnX': SpawnX,
-            'SpawnY': SpawnY,
-            'SpawnZ': SpawnZ,
-            'Time': Time
-            })
-        })
-    })
-
-new_file.save('World1/level.dat', gzipped=True)
-
-#make c.*.*.dat
-
-print('creating chunk files...       ')
-
-base36list = ['1k', '1l', '1m', '1n', '1o', '1p', '1q', '1r', '0', '1', '2', '3', '4', '5', '6', '7']
-base36signed = ['-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5', '6', '7']
-
-for i in range(0, 16):
-    for j in range(0, 16):
-
-        #calc TileEntity chunk positions
-        tiles_new = []
-        for k in TileList:
-            if (k['x'] + 128) // 16 == i and (k['z'] + 128) // 16 == j:
-                tiles_new.append(k)
-
-        #calc Entity chunk positions
-        entity_new = []
-        for k in EntityList:
-            if (k['Pos'][0] + 128) // 16 == i and (k['Pos'][2] + 128) // 16 == j:
-                entity_new.append(k)
+    World_tile_entity_chunks = [[] for i in range((L // 16) * (W // 16))]
+    
+    for TileEntity in level_indev['TileEntities']:
+    
+        pos = int(TileEntity['Pos'])
+        TileEntity['x'] = Int(pos % 1024 + config['x_chunk_offset'] * 16)
+        TileEntity['y'] = Int((pos >> 10) % 1024 + config['y_offset'])
+        TileEntity['z'] = Int((pos >> 20) % 1024 + config['z_chunk_offset'] * 16)
+        TileEntity.pop('Pos')
         
-        n = 16*i + j
+        x = pos % 1024
+        z = (pos >> 20) % 1024
         
-        new_file = File({
-            '': Compound({
-                'Level': Compound({
-                    'Entities': List[Compound](entity_new),
-                    'TileEntities': List[Compound](tiles_new),
-                    'LastUpdate': Long(200),
-                    'xPos': Int(base36signed[i]),
-                    'zPos': Int(base36signed[j]),
-                    'Blocks': ByteArray(Blocks_new[n*32768:n*32768+32768]),
-                    'Data': ByteArray(Data_nibbles[n*16384:n*16384+16384]),
-                    'BlockLight': ByteArray(Zeroes[0:16384]),
-                    'SkyLight': ByteArray(Zeroes[0:16384]),
-                    'HeightMap': ByteArray(HeightMap[n*256:n*256+256]),
-                    })
+        chunk = x // 16 * L // 16 + z // 16
+        World_tile_entity_chunks[chunk].append(TileEntity)
+        
+    return(World_tile_entity_chunks)
+    
+    
+def convert_block_IDs(level_indev, config):
+
+    L = level_indev['Map']['Length']
+    W = level_indev['Map']['Width']
+    H = level_indev['Map']['Height']
+    
+    Block_data = level_indev['Map']['Blocks']
+    
+    World_blocks = np.zeros(L * W * 128, dtype=int)
+    i = 0
+
+    for z_chunk in range(0, W//16):
+        for x_chunk in range(0, L//16):
+            for z in range(z_chunk*16, z_chunk*16+16):
+                for x in range(x_chunk*16, x_chunk*16+16):
+                
+                    for y in range(0, config['y_offset']):
+                        World_blocks[i] = Byte(config['offset_fill_block'])
+                        i += 1
+
+                    for y in range(0, H):
+                        # (y * L + x) * W + z
+                        World_blocks[i] = Block_data[(y * L + x) * W + z]
+                        i += 1
+                        
+                    i += 128 - H - config['y_offset']
+                    
+    World_block_chunks = np.split(World_blocks, L//16 * W//16)
+    
+    return(World_block_chunks)
+    
+    
+def convert_block_DVs(level_indev, config):
+
+    L = level_indev['Map']['Length']
+    W = level_indev['Map']['Width']
+    H = level_indev['Map']['Height']
+    
+    Block_data = level_indev['Map']['Data']
+    
+    World_blocks = np.zeros(L * W * 64, dtype=int)
+    i = 0
+
+    for z_chunk in range(0, W//16):
+        for x_chunk in range(0, L//16):
+            for z in range(z_chunk*16, z_chunk*16+16):
+                for x in range(x_chunk*16, x_chunk*16+16):
+                    
+                    for y in range(0, config['y_offset'], 2):
+                        World_blocks[i] = Byte(0)
+                        i += 1
+
+                    for y in range(0, H, 2):
+                        nibble0 = Block_data[(y * L + x) * W + z] // 16 % 16
+                        nibble1 = Block_data[((y+1) * L + x) * W + z] // 16 % 16
+                        byte = nibble1 * 16 + nibble0
+                        byte -= 256 * (byte > 127)
+                        World_blocks[i] = Byte(byte)
+                        i += 1
+
+                    i += (128 - H - config['y_offset']) // 2
+    
+    World_data_chunks = np.split(World_blocks, L//16 * W//16)
+    
+    return(World_data_chunks)
+    
+    
+def convert_block_light(level_indev, config):
+
+    L = level_indev['Map']['Length']
+    W = level_indev['Map']['Width']
+    H = level_indev['Map']['Height']
+    
+    Block_data = level_indev['Map']['Data']
+    
+    World_blocks = np.zeros(L * W * 64, dtype=int)
+    i = 0
+
+    for z_chunk in range(0, W//16):
+        for x_chunk in range(0, L//16):
+            for z in range(z_chunk*16, z_chunk*16+16):
+                for x in range(x_chunk*16, x_chunk*16+16):
+
+                    for y in range(0, config['y_offset'], 2):
+                        World_blocks[i] = Byte(0)
+                        i += 1
+                        
+                    for y in range(0, H, 2):
+                        nibble0 = Block_data[(y * L + x) * W + z] % 16
+                        nibble1 = Block_data[((y+1) * L + x) * W + z] % 16
+                        byte = nibble1 * 16 + nibble0
+                        byte -= 256 * (byte > 127)
+                        World_blocks[i] = Byte(byte)
+                        i += 1
+
+                    i += (128 - H - config['y_offset']) // 2
+    
+    World_light_chunks = np.split(World_blocks, L//16 * W//16)
+    
+    return(World_light_chunks)
+    
+    
+def calculate_height_map(World_block_chunks):
+
+    chunk_count = len(World_block_chunks)
+    World_height_map_chunks = [[] for i in range(chunk_count)]
+    
+    for chunk in range(0, chunk_count):
+        for x in range(16):
+            for z in range(16):
+            
+                n = z*2048 + x*128
+                column = World_block_chunks[chunk][n:n+128][::-1]
+                
+                try: top_block = 128 - [i for i, x in enumerate(column) if not(x in [0, 6, 20, 37, 38, 39, 40, 50, 51])][0]
+                except: top_block = 0
+                
+                World_height_map_chunks[chunk].append(Byte(top_block))
+    
+    return(World_height_map_chunks)
+    
+    
+def create_level_dat_alpha(world_name, level_indev, config):
+    
+    for Entity in level_indev['Entities']:
+        if Entity['id'] == 'LocalPlayer':
+            level_dat_alpha = {}
+            
+            # load old values or default
+            level_dat_alpha['Inventory'] = Entity['Inventory']
+            level_dat_alpha['Motion0'] = Double(Entity['Motion'][0])
+            level_dat_alpha['Motion1'] = Double(Entity['Motion'][1])
+            level_dat_alpha['Motion2'] = Double(Entity['Motion'][2])
+            level_dat_alpha['Pos0'] = Double(Entity['Pos'][0] + config['x_chunk_offset'] * 16)
+            level_dat_alpha['Pos1'] = Double(Entity['Pos'][1] + config['y_offset'])
+            level_dat_alpha['Pos2'] = Double(Entity['Pos'][2] + config['z_chunk_offset'] * 16)
+            level_dat_alpha['Rotation'] = Entity['Rotation']
+            level_dat_alpha['Air'] = Entity['Air']
+            try: level_dat_alpha['AttackTime'] = Entity['AttackTime']
+            except: level_dat_alpha['AttackTime'] = Short(0)
+            try: level_dat_alpha['DeathTime'] = Entity['DeathTime']
+            except: level_dat_alpha['DeathTime'] = Short(0)
+            level_dat_alpha['FallDistance'] = Entity['FallDistance']
+            level_dat_alpha['Fire'] = Entity['Fire']
+            try: level_dat_alpha['Health'] = Entity['Health']
+            except: level_dat_alpha['Health'] = Short(10)
+            try: level_dat_alpha['HurtTime'] = Entity['HurtTime']
+            except: level_dat_alpha['HurtTime'] = Short(0)
+            level_dat_alpha['OnGround'] = Byte(1)
+            level_dat_alpha['Score'] = Entity['Score']
+            level_dat_alpha['SpawnX'] = Int(level_indev['Map']['Spawn'][0] + config['x_chunk_offset'] * 16)
+            level_dat_alpha['SpawnY'] = Int(level_indev['Map']['Spawn'][1] + config['y_offset'])
+            level_dat_alpha['SpawnZ'] = Int(level_indev['Map']['Spawn'][2] + config['z_chunk_offset'] * 16)
+            level_dat_alpha['LastPlayed'] = level_indev['About']['CreatedOn']
+            try: level_dat_alpha['Time'] = Long(level_indev['Environment']['TimeOfDay'])
+            except: level_dat_alpha['Time'] = Long(0)
+            
+            break
+    
+    # create the file
+    new_file = File({
+        '': Compound({
+            'Data': Compound({
+                'Player': Compound({
+                    'Inventory': level_dat_alpha['Inventory'],
+                    'Motion': List[Double]([level_dat_alpha['Motion0'], level_dat_alpha['Motion1'], level_dat_alpha['Motion2']]),
+                    'Pos': List[Double]([level_dat_alpha['Pos0'], level_dat_alpha['Pos1'], level_dat_alpha['Pos2']]),
+                    'Rotation': level_dat_alpha['Rotation'],
+                    'Air': level_dat_alpha['Air'],
+                    'AttackTime': level_dat_alpha['AttackTime'],
+                    'DeathTime': level_dat_alpha['DeathTime'],
+                    'FallDistance': level_dat_alpha['FallDistance'],
+                    'Fire': level_dat_alpha['Fire'],
+                    'Health': level_dat_alpha['Health'],
+                    'HurtTime': level_dat_alpha['HurtTime'],
+                    'OnGround': level_dat_alpha['OnGround'],
+                    'Score': level_dat_alpha['Score'],
+                    }),
+                'LastPlayed': level_dat_alpha['LastPlayed'],
+                'SpawnX': level_dat_alpha['SpawnX'],
+                'SpawnY': level_dat_alpha['SpawnY'],
+                'SpawnZ': level_dat_alpha['SpawnZ'],
+                'Time': level_dat_alpha['Time']
                 })
             })
+        })
 
-        try: os.mkdir(f'World1/{base36list[i]}/')
-        except: pass
-        try: os.mkdir(f'World1/{base36list[i]}/{base36list[j]}/')
-        except: pass
-        new_file.save(f'World1/{base36list[i]}/{base36list[j]}/c.{base36signed[i]}.{base36signed[j]}.dat', gzipped=True)
+    new_file.save(f'{world_name}/level.dat', gzipped=True)
+    
 
-print(f'Converted world {Worlds[0]} to alpha save format')
+def create_chunks(world_name, level_indev, World_entity_chunks, World_tile_entity_chunks, World_block_chunks, World_data_chunks, World_light_chunks, World_height_map_chunks, config):
+
+    L = level_indev['Map']['Length'] // 16
+    W = level_indev['Map']['Width'] // 16
+    chunk_count = L * W
+    
+    for i in range(chunk_count):
+    
+        x = i // L + config['x_chunk_offset']
+        z = i % L + config['z_chunk_offset']
+        x36folder = np.base_repr(x % 64, 36).lower()
+        z36folder = np.base_repr(z % 64, 36).lower()
+        x36file = np.base_repr(x, 36).lower()
+        z36file = np.base_repr(z, 36).lower()
+            
+        new_file = File({
+        '': Compound({
+            'Level': Compound({
+                'Entities': List[Compound](World_entity_chunks[i]),
+                'TileEntities': List[Compound](World_tile_entity_chunks[i]),
+                'LastUpdate': Long(200),
+                'xPos': Int(x),
+                'zPos': Int(z),
+                'Blocks': ByteArray(World_block_chunks[i]),
+                'Data': ByteArray(World_data_chunks[i]),
+                'BlockLight': ByteArray(np.zeros(16384, dtype=int)),
+                'SkyLight': ByteArray(World_light_chunks[i]),
+                'HeightMap': ByteArray(World_height_map_chunks[i]),
+                'TerrainPopulated': Byte(1),
+                })
+            })
+        })
+        
+        try: os.mkdir(f'{world_name}/{x36folder}/')
+        except: pass
+        try: os.mkdir(f'{world_name}/{x36folder}/{z36folder}/')
+        except: pass
+        
+        new_file.save(f'{world_name}/{x36folder}/{z36folder}/c.{x36file}.{z36file}.dat', gzipped=True)
+
+
+def indev_converter(file_name, config):
+
+    world_indev = load_indev(file_name)
+    world_name = file_name[:-8]
+
+    L = int(world_indev['Map']['Length'])
+    W = int(world_indev['Map']['Width'])
+    H = int(world_indev['Map']['Height'])
+
+    print(f"Converting world {file_name}:")
+
+    if L % 16: raise ValueError(f'Map Length is not divisible by 16 (Length: {L})')
+    if W % 16: raise ValueError(f'Map Width is not divisible by 16 (Width: {W})')
+    if H > 128: raise ValueError(f'Map Height cannot be greater than 128 (Height: {H})')
+    # if L != W: raise ValueError(f'Map is not square (Length: {L}, Width: {W})')
+    # if L != 256 and W != 256: raise ValueError(f'Unsupported map size (Length: {L}, Width: {W})')
+
+    os.mkdir(world_name)
+    
+    print("Converting Entities...     ", end='\r')
+    world_entity = convert_entities(world_indev, config)
+    
+    print("Converting Tile Entities...", end='\r')
+    world_tile_entity = convert_tile_entities(world_indev, config)
+    
+    print("Converting Blocks...       ", end='\r')
+    world_block_ID = convert_block_IDs(world_indev, config)
+    
+    print("Converting Data Values...  ", end='\r')
+    world_block_DV = convert_block_DVs(world_indev, config)
+    
+    print("Converting Light...        ", end='\r')
+    world_block_light = convert_block_light(world_indev, config)
+
+    print("Calculating Height Map...  ", end='\r')
+    world_height_map = calculate_height_map(world_block_ID)
+    
+    print("Creating Files...          ", end='\r')
+    create_level_dat_alpha(world_name, world_indev, config)
+    create_chunks(world_name, world_indev, world_entity, world_tile_entity, world_block_ID, world_block_DV, world_block_light, world_height_map, config)
+
+    print(f"Converted {file_name} to world {world_name}!")
+    
+
+def test_config(config):
+    
+    config['x_chunk_offset']
+    config['z_chunk_offset']
+    
+    if config['y_offset'] > 64:
+        raise ValueError("y_offset must be less than or equal 64")
+        
+    if config['y_offset'] % 2:
+        raise ValueError("y_offset must be a multiple of 2")
+        
+    if config['offset_fill_block'] > 255:
+        raise ValueError("offset_fill_block must be a valid block ID")
+        
+    
+if __name__ == '__main__':
+    
+    # find worlds
+    worlds = [f for f in os.listdir() if f.endswith('.mclevel')]
+    if len(worlds) == 0:
+        raise FileNotFoundError("No files with extension '.mclevel' found")
+    
+    # find config file
+    with open("config.yml", 'r') as config_file:
+        config = safe_load(config_file)
+        test_config(config)
+        
+    print("Successfully loaded config.yml")
+    print(f"Found worlds {', '.join(worlds)}")
+    
+    for world in worlds:
+        try: indev_converter(world, config)
+        except Exception as e:
+            print(f'Could not convert {world}: {e}')
