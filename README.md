@@ -19,6 +19,7 @@ This tool converts the following into alpha save format:
 * player data
 * tile entity data 
 * entity data (mobs)
+
 It also recalculates the height map.
 Older Indev saves may also have some data missing (such as health), so instead a defaultt value is used to allow conversion.
 
