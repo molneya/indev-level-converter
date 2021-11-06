@@ -13,7 +13,12 @@ Alternatively, you can also use any version that converts alpha save format into
 **Some users may need to run the program as administrator to get it to work. You can do this on Windows by opening command prompt as administrator and running the program from there.**
 
 ## What this tool does
-This tool converts the block data, block value data, player data, tile entity data and entity data (mobs) into alpha save format. 
+This tool converts the following into alpha save format:
+* block data
+* block value data
+* player data
+* tile entity data 
+* entity data (mobs)
 It also recalculates the height map.
 Older Indev saves may also have some data missing (such as health), so instead a defaultt value is used to allow conversion.
 
