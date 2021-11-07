@@ -21,6 +21,7 @@ This tool converts the following into alpha save format:
 * entity data (mobs)
 
 It also recalculates the height map.
+
 Older Indev saves may also have some data missing (such as health), so instead a defaultt value is used to allow conversion.
 
 ## What this tool doesn't do
@@ -33,7 +34,7 @@ The world dimensions, type and theme are all up to you.
 Some versions also have chests filled with almost every item in the game (including some unobtainables) so if you want extra blocks choose one of the versions where they are available.
 
 ## Known Issues/Byproducts of updating
-Worlds are repopulated once updating. That means you will see more trees, ores and caves than you might expect. This will not be fixed.
+Worlds are repopulated in Infdev 20100327 regardless of the tag set. That means you will see more trees, ores and caves than you might expect.
 
 If your world crashes when you load, you may have chunks with invalid IDs in that version (probably old coloured cloths).
 
