@@ -2,19 +2,29 @@
 # How many chunks to offset on the x axis
 # By default, the world is only placed in the positive/positive quadrant
 # So if you want it centered on this axis, set the value to negative half the width of the map divided by 2 (in chunks)
-x_chunk_offset: -8
+x_chunk_offset: 0
 
 # How far on the y axis will the world be offset
 # Must be less than or equal 64, depending on your world size settings
-# Must also be even.
+# Must also be even
 y_offset: 32
 
 # How many chunks to offset on the z axis
 # By default, the world is only placed in the positive/positive quadrant
 # So if you want it centered on this axis, set the value to negative half the length of the map divided by 2 (in chunks)
-z_chunk_offset: -8
+z_chunk_offset: 0
 
 # The kind of block is used to fill the gap if the y_offset is not 0
 # This value is the block ID
 # Common values: 0 (air), 1 (stone), 7 (bedrock)
 offset_fill_block: 1
+
+# Set the TerrainPopulated tag
+# By default, terrain is repopulated when the world is converted. If you don't want this to happen, set it to 1
+# Must be 0 or 1
+terrain_populated: 1
+
+# Seed to use when converting the world
+# Leave blank for a random seed
+# Must be a number
+random_seed: 
