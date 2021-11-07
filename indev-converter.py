@@ -251,32 +251,37 @@ def create_level_dat_alpha(world_name, level_indev, config):
             except: level_dat_alpha['Time'] = Long(0)
             
             break
+            
+    data_compound = {
+        'Player': Compound({
+            'Inventory': level_dat_alpha['Inventory'],
+            'Motion': List[Double]([level_dat_alpha['Motion0'], level_dat_alpha['Motion1'], level_dat_alpha['Motion2']]),
+            'Pos': List[Double]([level_dat_alpha['Pos0'], level_dat_alpha['Pos1'], level_dat_alpha['Pos2']]),
+            'Rotation': level_dat_alpha['Rotation'],
+            'Air': level_dat_alpha['Air'],
+            'AttackTime': level_dat_alpha['AttackTime'],
+            'DeathTime': level_dat_alpha['DeathTime'],
+            'FallDistance': level_dat_alpha['FallDistance'],
+            'Fire': level_dat_alpha['Fire'],
+            'Health': level_dat_alpha['Health'],
+            'HurtTime': level_dat_alpha['HurtTime'],
+            'OnGround': level_dat_alpha['OnGround'],
+            'Score': level_dat_alpha['Score'],
+            }),
+        'LastPlayed': level_dat_alpha['LastPlayed'],
+        'SpawnX': level_dat_alpha['SpawnX'],
+        'SpawnY': level_dat_alpha['SpawnY'],
+        'SpawnZ': level_dat_alpha['SpawnZ'],
+        'Time': level_dat_alpha['Time']
+        }
+        
+    if not config['random_seed'] is None:
+        data_compound['RandomSeed'] = Long(config['random_seed'])
     
     # create the file
     new_file = File({
         '': Compound({
-            'Data': Compound({
-                'Player': Compound({
-                    'Inventory': level_dat_alpha['Inventory'],
-                    'Motion': List[Double]([level_dat_alpha['Motion0'], level_dat_alpha['Motion1'], level_dat_alpha['Motion2']]),
-                    'Pos': List[Double]([level_dat_alpha['Pos0'], level_dat_alpha['Pos1'], level_dat_alpha['Pos2']]),
-                    'Rotation': level_dat_alpha['Rotation'],
-                    'Air': level_dat_alpha['Air'],
-                    'AttackTime': level_dat_alpha['AttackTime'],
-                    'DeathTime': level_dat_alpha['DeathTime'],
-                    'FallDistance': level_dat_alpha['FallDistance'],
-                    'Fire': level_dat_alpha['Fire'],
-                    'Health': level_dat_alpha['Health'],
-                    'HurtTime': level_dat_alpha['HurtTime'],
-                    'OnGround': level_dat_alpha['OnGround'],
-                    'Score': level_dat_alpha['Score'],
-                    }),
-                'LastPlayed': level_dat_alpha['LastPlayed'],
-                'SpawnX': level_dat_alpha['SpawnX'],
-                'SpawnY': level_dat_alpha['SpawnY'],
-                'SpawnZ': level_dat_alpha['SpawnZ'],
-                'Time': level_dat_alpha['Time']
-                })
+            'Data': Compound(data_compound)
             })
         })
 
@@ -311,7 +316,7 @@ def create_chunks(world_name, level_indev, World_entity_chunks, World_tile_entit
                 'BlockLight': ByteArray(np.zeros(16384, dtype=int)),
                 'SkyLight': ByteArray(World_light_chunks[i]),
                 'HeightMap': ByteArray(World_height_map_chunks[i]),
-                'TerrainPopulated': Byte(1),
+                'TerrainPopulated': Byte(config['terrain_populated']),
                 })
             })
         })
@@ -370,8 +375,11 @@ def indev_converter(file_name, config):
 
 def test_config(config):
     
-    config['x_chunk_offset']
-    config['z_chunk_offset']
+    if not type(config['x_chunk_offset']) is int:
+        raise ValueError("x_chunk_offset must be an integer")
+        
+    if not type(config['z_chunk_offset']) is int:
+        raise ValueError("z_chunk_offset must be an integer")
     
     if config['y_offset'] > 64:
         raise ValueError("y_offset must be less than or equal 64")
@@ -381,6 +389,12 @@ def test_config(config):
         
     if config['offset_fill_block'] > 255:
         raise ValueError("offset_fill_block must be a valid block ID")
+        
+    if config['terrain_populated'] != 0 and config['terrain_populated'] != 1:
+        raise ValueError("terrain_populated must be a 0 or 1")
+    
+    if not type(config['random_seed']) is int and not config['random_seed'] is None:
+        raise ValueError("random_seed must be an integer or blank")
         
     
 if __name__ == '__main__':
