@@ -23,7 +23,7 @@ This tool converts the following into alpha save format:
 
 It also recalculates the height map.
 
-Older Indev saves may also have some data missing (such as health), so instead a defaultt value is used to allow conversion.
+Older Indev saves may also have some data missing (such as health), so instead a default value is used to allow conversion.
 
 ## What this tool doesn't do
 It doesn't convert light data or any indev data (such as skybox colour) that isn't used in alpha save format.
