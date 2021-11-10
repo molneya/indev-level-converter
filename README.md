@@ -2,7 +2,7 @@
 
 ## How to use
 This program requires NBTLib and yaml, which can be installed using this command: 
-`python -m pip install nbtlib==1.12.1 pyyaml`.
+`python -m pip install nbtlib==1.12.1 pyyaml`
 
 Download the files from **Releases** and place it in a folder with a `.mclevel` (Indev) file. Run the python file and then wait for it to convert. Use the settings in the `config.yml` file to adjust how the converter will process the world.
 
