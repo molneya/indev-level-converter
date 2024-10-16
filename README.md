@@ -1,50 +1,80 @@
-# indev level converter
 
-## How to use
-This program requires NBTLib and yaml, which can be installed using this command: 
-`python -m pip install nbtlib==1.12.1 pyyaml`
+# Indev Level Converter
 
-Download the files from **Releases** and place it in a folder with a `.mclevel` (Indev) file. Run the python file and then wait for it to convert. Use the settings in the `config.yml` file to adjust how the converter will process the world.
+## Setup
 
-Once converted, move the resulting world save folder to your minecraft saves. All worlds will be converted to the name of the original file. 
+Download and install [Python](https://www.python.org/downloads/) and [Git](https://git-scm.com/downloads) if you haven't already.
 
-This can be loaded in any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01).
-Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1) (This is untested). 
+Clone the repository:
+```
+git clone https://github.com/molneya/indev-level-converter
+cd indev-level-converter
+```
 
+Install the dependencies:
+```
+python -m pip install -r requirements.txt
+```
+
+You can now run the program (this shows help):
+```
+python indev-converter.py --help
+```
+
+## Usage
+
+To convert a world, run the script with a world as an argument (it should end in .mclevel):
+```
+python indev-converter.py your_world.mclevel
+```
+
+Once converted, move the resulting world save folder to your Minecraft saves. Worlds can be loaded in any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01), but they will need to be renamed for them to show up. Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1), however this is untested.
+
+<!--
 **Some users may need to run the program as administrator to get it to work. You can do this on Windows by opening command prompt as administrator and running the program from there.**
+Note from future me: check why this was needed again?
+-->
 
-## What this tool does
+### Options
+
+For advanced users, there are some options to fine tune how you want to convert your world:
+
+- `-o`, `--output`: Sets output directory of the world.
+- `--x-offset CHUNKS`: Sets chunk offset of the converted world in the x direction.
+- `--z-offset CHUNKS`: Sets chunk offset of the converted world in the z direction.
+- `--y-offset BLOCKS`: Sets **block** offset of the converted world in the y direction.
+- `--seed SEED`: Sets seed of converted world. Useful if you already scouted a seed you want to place the world into.
+- `--fill-block BLOCK_ID`: The block to use to fill the world when used with `--y-offset`. Use 0 (air) for floating worlds.
+- `--repopulate`: Sets the TerrainPopulated tag of chunks to false. Do this if you want to regenerate ores and trees.
+
+## Other important information
+
+### What this tool does
+
 This tool converts the following into alpha save format:
-* block data
-* block value data
-* player data
-* tile entity data 
-* entity data (mobs)
+- block data
+- block value data
+- block light data
+- player data
+- entity data (such as mobs)
+- tile entity data (such as chests)
 
-It also recalculates the height map.
+It also calculates the height map, which doesn't exist in the indev save format.
 
-Older Indev saves may also have some data missing (such as health), so instead a default value is used to allow conversion.
+### Known issues/byproducts of updating
 
-## What this tool doesn't do
-It doesn't convert light data or any indev data (such as skybox colour) that isn't used in alpha save format.
-It cannot check whether the block IDs are compatible with the version you are upgrading to.
-Deep worlds will not convert due to them being too tall.
+Deep worlds will not convert. They are too tall.
 
-## Recommendations
-The world dimensions, type and theme are all up to you.
-Some versions also have chests filled with almost every item in the game (including some unobtainables) so if you want extra blocks choose one of the versions where they are available.
-
-## Known Issues/Byproducts of updating
 Worlds are repopulated in Infdev 20100327 regardless of the tag set. That means you will see more trees, ores and caves than you might expect.
 
-If your world crashes when you load, you may have chunks with invalid IDs in that version (probably old coloured cloths).
+If your world crashes when you load, you may have chunks with invalid IDs in that version (probably coloured cloths).
 
-If your world crashes upon opening a chest, you probably have invalid IDs in that chest (again, probably coloured cloths).
+If your world crashes upon opening a chest, you definitely have invalid IDs in that chest (again, probably coloured cloths).
 
-When loading the world for the first time, the world will take a while to be playable because it must recalculate the light data, as it is not converted with this tool.
+When loading the world for the first time, the world will take a while to be playable because it must recalculate the sky light data, as it is not converted with this tool.
 
-Mobs will not load in versions before Infdev 20100415 because they did not save again before then. The mobs will still be there after this version, so if you placed a block where a pig used to be it will suffocate in that block.
+Mobs will not load in versions before Infdev 20100415 because they did not save. Mobs will reload after this version, so if you placed a block where a pig used to be it will suffocate in that block.
 
 Shot arrows will not load until late Infdev/early Alpha (version unknown).
 
-Before Indev 20100212-1, torches' attachment depended on what blocks surround them. That means if you convert a world before that version, torches will appear to be placed in mid-air. Breaking and replacing the torches in a version above this will fix this issue.
+Before Indev 20100212-1, how a torch attached to a block depended on what blocks surrounded it. That means if you convert a world before that version, torches will appear to be placed in mid-air. Breaking and replacing the torches in a version above this will fix this issue.
