@@ -18,14 +18,14 @@ python -m pip install -r requirements.txt
 
 You can now run the program (this shows help):
 ```
-python indev-converter.py --help
+python indev_converter.py --help
 ```
 
 ## Usage
 
 To convert a world, run the script with a world as an argument (it should end in .mclevel):
 ```
-python indev-converter.py your_world.mclevel
+python indev_converter.py your_world.mclevel
 ```
 
 Once converted, move the resulting world save folder to your Minecraft saves. Worlds can be loaded in any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01), but they will need to be renamed for them to show up. Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1), however this is untested.
