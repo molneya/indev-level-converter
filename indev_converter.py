@@ -96,14 +96,14 @@ class IndevToAlphaConverter:
             entity['Pos'][2] += self.args.z_offset * 16
 
             if 'TileX' in entity:
-                entity['TileX'][0] += self.args.x_offset * 16
-                entity['TileY'][1] += self.args.y_offset
-                entity['TileZ'][2] += self.args.z_offset * 16
+                entity['TileX'] = Int(entity['TileX'] + self.args.x_offset * 16)
+                entity['TileY'] = Int(entity['TileY'] + self.args.y_offset)
+                entity['TileZ'] = Int(entity['TileZ'] + self.args.z_offset * 16)
 
             if 'xTile' in entity:
-                entity['xTile'][0] += self.args.x_offset * 16
-                entity['yTile'][1] += self.args.y_offset
-                entity['zTile'][2] += self.args.z_offset * 16
+                entity['xTile'] = Int(entity['xTile'] + self.args.x_offset * 16)
+                entity['yTile'] = Int(entity['yTile'] + self.args.y_offset)
+                entity['zTile'] = Int(entity['zTile'] + self.args.z_offset * 16)
 
     def _convert_tile_entities(self):
         for tile_entity in self.tile_entities:
