@@ -48,9 +48,9 @@ Note from future me: check why this was needed again?
 For advanced users, there are some options to fine tune how you want to convert your world:
 
 - `-o`, `--output`: Sets output directory of the world.
-- `--x-offset CHUNKS`: Sets chunk offset of the converted world in the x direction.
-- `--z-offset CHUNKS`: Sets chunk offset of the converted world in the z direction.
-- `--y-offset BLOCKS`: Sets **block** offset of the converted world in the y direction.
+- `--x-offset BLOCKS`: Sets block offset of the converted world in the x direction.
+- `--z-offset BLOCKS`: Sets block offset of the converted world in the z direction.
+- `--y-offset BLOCKS`: Sets block offset of the converted world in the y direction.
 - `--seed SEED`: Sets seed of converted world. Useful if you already scouted a seed you want to place the world into.
 - `--fill-block BLOCK_ID`: The block to use to fill the world when used with `--y-offset`. Use 0 (air) for floating worlds.
 - `--repopulate`: Sets the TerrainPopulated tag of chunks to false. Do this if you want to regenerate ores and trees.

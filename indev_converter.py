@@ -213,8 +213,12 @@ class IndevToAlphaConverter:
             raise ValueError(f"invalid y offset: {self.args.y_offset} (expected value between 0 and 128)")
         if self.args.y_offset % 2:
             raise ValueError(f"invalid y offset: {self.args.y_offset} (expected multiple of 2)")
+        if self.args.x_offset % 16:
+            raise ValueError(f"invalid x offset: {self.args.x_offset} (expected multiple of 16)")
+        if self.args.z_offset % 16:
+            raise ValueError(f"invalid z offset: {self.args.z_offset} (expected multiple of 16)")
         if not 0 <= self.args.fill_block <= 255:
-            raise ValueError(f"invalid fill block ID: {self.args.fill_block} (expected value between 0 and 255)")
+            raise ValueError(f"invalid fill block: {self.args.fill_block} (expected value between 0 and 255)")
 
         # Ensure sane level
         if self.map['Length'] % 16:
@@ -259,9 +263,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("level", type=pathlib.Path, help="level to convert")
     parser.add_argument("-o", "--output", default=None, type=pathlib.Path, help="world output directory")
-    parser.add_argument("--x-offset", default=0, type=int, help="level x chunk offset", metavar="CHUNKS")
-    parser.add_argument("--z-offset", default=0, type=int, help="level z chunk offset", metavar="CHUNKS")
-    parser.add_argument("--y-offset", default=32, type=int, help="level y offset", metavar="BLOCKS")
+    parser.add_argument("--x-offset", default=0, type=int, help="level x block offset", metavar="BLOCKS")
+    parser.add_argument("--z-offset", default=0, type=int, help="level z block offset", metavar="BLOCKS")
+    parser.add_argument("--y-offset", default=32, type=int, help="level y block offset", metavar="BLOCKS")
     parser.add_argument("--seed", default=None, type=int, help="seed of newly created world")
     parser.add_argument("--fill-block", default=1, type=int, help="fill block ID", metavar="BLOCK_ID")
     parser.add_argument("--repopulate", action="store_true", help="repopulates chunks")
