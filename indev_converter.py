@@ -41,9 +41,9 @@ class IndevToAlphaConverter:
                         'Score': player['Score'],
                     }),
                     'LastPlayed': self.about['CreatedOn'],
-                    'SpawnX': Int(self.map['Spawn'][0] + self.args.x_offset * 16),
+                    'SpawnX': Int(self.map['Spawn'][0] + self.args.x_offset),
                     'SpawnY': Int(self.map['Spawn'][1] + self.args.y_offset),
-                    'SpawnZ': Int(self.map['Spawn'][2] + self.args.z_offset * 16),
+                    'SpawnZ': Int(self.map['Spawn'][2] + self.args.z_offset),
                     'Time': Long(self.environment['TimeOfDay']) if 'TimeOfDay' in self.environment else Long(0),
                 })
             })
@@ -58,12 +58,14 @@ class IndevToAlphaConverter:
         total_chunks = x_chunks * z_chunks
 
         for index in range(total_chunks):
-            current_z, current_x = divmod(index, z_chunks)
+            raw_z, raw_x = divmod(index, z_chunks)
+            converted_x = raw_x + self.args.x_offset // 16
+            converted_z = raw_z + self.args.z_offset // 16
 
-            entities = self._extract_entities(current_x, current_z)
-            tile_entities = self._extract_tile_entities(current_x, current_z)
-            blocks = self._extract_chunk_blocks(current_x, current_z)
-            data, light = self._extract_chunk_data(current_x, current_z)
+            entities = self._extract_entities(converted_x, converted_z)
+            tile_entities = self._extract_tile_entities(converted_x, converted_z)
+            blocks = self._extract_chunk_blocks(raw_x, raw_z)
+            data, light = self._extract_chunk_data(raw_x, raw_z)
             height_map = self._calculate_height_map(blocks)
 
             data = File({
@@ -72,8 +74,8 @@ class IndevToAlphaConverter:
                         'Entities': List[Compound](entities),
                         'TileEntities': List[Compound](tile_entities),
                         'LastUpdate': Long(200),
-                        'xPos': Int(current_x + self.args.x_offset),
-                        'zPos': Int(current_z + self.args.z_offset),
+                        'xPos': Int(converted_x),
+                        'zPos': Int(converted_z),
                         'Blocks': ByteArray(blocks),
                         'Data': ByteArray(data),
                         'BlockLight': ByteArray(light),
@@ -91,25 +93,25 @@ class IndevToAlphaConverter:
             entity['Motion'] = List[Double]([Double(motion) for motion in entity['Motion']])
             entity['Pos'] = List[Double]([Double(motion) for motion in entity['Pos']])
 
-            entity['Pos'][0] += self.args.x_offset * 16
+            entity['Pos'][0] += self.args.x_offset
             entity['Pos'][1] += self.args.y_offset
-            entity['Pos'][2] += self.args.z_offset * 16
+            entity['Pos'][2] += self.args.z_offset
 
             if 'TileX' in entity:
-                entity['TileX'] = Int(entity['TileX'] + self.args.x_offset * 16)
+                entity['TileX'] = Int(entity['TileX'] + self.args.x_offset)
                 entity['TileY'] = Int(entity['TileY'] + self.args.y_offset)
-                entity['TileZ'] = Int(entity['TileZ'] + self.args.z_offset * 16)
+                entity['TileZ'] = Int(entity['TileZ'] + self.args.z_offset)
 
             if 'xTile' in entity:
-                entity['xTile'] = Int(entity['xTile'] + self.args.x_offset * 16)
+                entity['xTile'] = Int(entity['xTile'] + self.args.x_offset)
                 entity['yTile'] = Int(entity['yTile'] + self.args.y_offset)
-                entity['zTile'] = Int(entity['zTile'] + self.args.z_offset * 16)
+                entity['zTile'] = Int(entity['zTile'] + self.args.z_offset)
 
     def _convert_tile_entities(self):
         for tile_entity in self.tile_entities:
-            tile_entity['x'] = Int(tile_entity['Pos'] % 1024 + self.args.x_offset * 16)
+            tile_entity['x'] = Int(tile_entity['Pos'] % 1024 + self.args.x_offset)
             tile_entity['y'] = Int((tile_entity['Pos'] >> 10) % 1024 + self.args.y_offset)
-            tile_entity['z'] = Int((tile_entity['Pos'] >> 20) % 1024 + self.args.z_offset * 16)
+            tile_entity['z'] = Int((tile_entity['Pos'] >> 20) % 1024 + self.args.z_offset)
             tile_entity.pop('Pos')
 
     def _extract_entities(self, chunk_x, chunk_z):
@@ -117,15 +119,10 @@ class IndevToAlphaConverter:
         for entity in self.entities:
             if entity['id'] == 'LocalPlayer':
                 continue
-
-            entity_x = entity['Pos'][0] + self.args.x_offset * 16
-            entity_z = entity['Pos'][2] + self.args.z_offset * 16
-
-            if not chunk_x * 16 <= entity_x < chunk_x * 16 + 16:
+            if not chunk_x * 16 <= entity['Pos'][0] < chunk_x * 16 + 16:
                 continue
-            if not chunk_z * 16 <= entity_z < chunk_z * 16 + 16:
+            if not chunk_z * 16 <= entity['Pos'][2] < chunk_z * 16 + 16:
                 continue
-
             entities.append(entity)
 
         return entities
@@ -133,14 +130,10 @@ class IndevToAlphaConverter:
     def _extract_tile_entities(self, chunk_x, chunk_z):
         tile_entities = []
         for tile_entity in self.tile_entities:
-            tile_entity_x = tile_entity['x'] + self.args.x_offset * 16
-            tile_entity_z = tile_entity['z'] + self.args.z_offset * 16
-
-            if not chunk_x * 16 <= tile_entity_x < chunk_x * 16 + 16:
+            if not chunk_x * 16 <= tile_entity['x'] < chunk_x * 16 + 16:
                 continue
-            if not chunk_z * 16 <= tile_entity_z < chunk_z * 16 + 16:
+            if not chunk_z * 16 <= tile_entity['z'] < chunk_z * 16 + 16:
                 continue
-
             tile_entities.append(tile_entity)
 
         return tile_entities
@@ -287,7 +280,7 @@ def main():
     output_path = args.output or str(args.level).rstrip(".mclevel")
 
     if os.path.isdir(output_path):
-        if input(f"{output_path} already exists. Overwrite? [y/N] ").lower() == 'y':
+        if input(f"folder '{output_path}' already exists. Overwrite? [y/N] ").lower() == 'y':
             shutil.rmtree(output_path)
         else:
             return
@@ -295,7 +288,7 @@ def main():
     save_start = time.time()
     world.save(output_path)
     save_end = time.time()
-    print(f"{args.level}: saved level to {output_path} in alpha save format in {save_end - save_start:.3f}s")
+    print(f"{args.level}: saved level to folder '{output_path}' in alpha save format in {save_end - save_start:.3f}s")
 
 if __name__ == "__main__":
     main()
