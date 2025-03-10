@@ -3,6 +3,12 @@
 
 ## Setup
 
+### From latest build
+
+Head to the [releases](https://github.com/molneya/indev-level-converter/releases) page to find the latest executable. No further setup is necessary.
+
+### From source
+
 Download and install [Python](https://www.python.org/downloads/) and [Git](https://git-scm.com/downloads) if you haven't already.
 
 Clone the repository:
@@ -23,9 +29,11 @@ python indev_converter.py --help
 
 ## Usage
 
-To convert a world, run the script with a world as an argument (it should end in .mclevel):
+If you downloaded the executable, the easiest way to convert a world is to drag your .mclevel on top of it. It should start converting automatically.
+
+Otherwise, run the program with a world as an argument (it should end in .mclevel):
 ```
-python indev_converter.py your_world.mclevel
+indev_converter your_world.mclevel
 ```
 
 Once converted, move the resulting world save folder to your Minecraft saves. Worlds can be loaded in any version that supports alpha save format (Infdev 20100327 - Beta 1.2_01), but they will need to be renamed for them to show up. Alternatively, you can also use any version that converts alpha save format into mcregion file format (Beta 1.3 - 1.1), however this is untested.
